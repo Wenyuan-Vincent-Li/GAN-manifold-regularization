@@ -16,7 +16,7 @@ flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
 flags.DEFINE_string('logdir', './log/svhn', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
-flags.DEFINE_integer('labeled', 100, 'labeled data per class')
+flags.DEFINE_integer('labeled', 200, 'labeled data per class')
 flags.DEFINE_float('learning_rate', 0.0003, 'learning_rate[0.003]')
 flags.DEFINE_float('unl_weight', 1.0, 'unlabeled weight [1.]')
 flags.DEFINE_float('lbl_weight', 1.0, 'unlabeled weight [1.]')
@@ -348,5 +348,5 @@ def main(_):
 
 if __name__ == '__main__':
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     tf.app.run()
