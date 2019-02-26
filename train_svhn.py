@@ -13,7 +13,7 @@ import sys
 flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 50, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_2000', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
 flags.DEFINE_integer('labeled', 200, 'labeled data per class')
