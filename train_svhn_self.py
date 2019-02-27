@@ -14,7 +14,7 @@ import sys
 flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 50, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn_2000_self_samples_unl', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_2000_self_batchsize', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
 flags.DEFINE_integer('labeled', 200, 'labeled data per class')
@@ -355,9 +355,9 @@ def main(_):
                 "| train acc = %.4f| test acc = %.4f | test acc ema = %0.4f"
                 % (epoch, time.time() - begin, klw, lr, train_loss_gen, train_loss_lab, train_loss_unl, train_acc,
                    test_acc, test_acc_ma))
-            samples_o = sess.run(samples)
-            save_images(samples_o[:64], image_manifold_size(64), \
-                        os.path.join("samples_unl", 'train_{:02d}.png'.format(epoch )))
+            # samples_o = sess.run(samples)
+            # save_images(samples_o[:64], image_manifold_size(64), \
+            #             os.path.join("samples_unl", 'train_{:02d}.png'.format(epoch )))
 
             sess.run(inc_global_epoch)
 
