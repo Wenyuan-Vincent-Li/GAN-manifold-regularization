@@ -336,3 +336,55 @@ def batch_norm_contrib(x, name, train = False):
                                      is_training=train,
                                      scope=name)
     return x
+
+@add_arg_scope
+def _linear_fc(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, use_bias = True):
+    """
+    Usually used for convert the latent vector z to the conv feature pack
+    :param input_:
+    :param output_size:
+    :param scope:
+    :param stddev:
+    :param bias_start:
+    :param with_w:
+    :return:
+    """
+    with tf.variable_scope(scope):
+        x = tf.layers.dense(
+            inputs=input_,
+            units=output_size,
+            use_bias=use_bias,
+            kernel_initializer=tf.random_normal_initializer(stddev=stddev),
+            bias_initializer=tf.constant_initializer(bias_start),
+            name=scope
+        )
+    return x
+
+@add_arg_scope
+def _conv2d(input_, output_dim,
+            k_h=5, k_w=5, d_h=2, d_w=2,
+            stddev=0.02, name="conv2d"):
+    with tf.variable_scope(name):
+        x = tf.layers.conv2d(inputs=input_,
+                             filters=output_dim,
+                             kernel_size=(k_h, k_w),
+                             strides=(d_h, d_w),
+                             padding='same',
+                             kernel_initializer=tf.truncated_normal_initializer(stddev=stddev),
+                             name=name)
+    return x
+
+@add_arg_scope
+def _deconv2d(input_, output_shape,
+              k_h=5, k_w=5, d_h=2, d_w=2,
+              stddev=0.02, name="deconv2d", use_bias = True):
+    with tf.variable_scope(name):
+        x = tf.layers.conv2d_transpose(inputs=input_,
+                                       filters=output_shape,
+                                       kernel_size=(k_h, k_w),
+                                       strides=(d_h, d_w),
+                                       padding='same',
+                                       use_bias = use_bias,
+                                       kernel_initializer=tf.random_normal_initializer(stddev=stddev),
+                                       name=name)
+    return x

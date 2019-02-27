@@ -60,24 +60,27 @@ class GAN_manifold_reg():
             counter = {}
             x = z_seed
             with tf.variable_scope('dense_1'):
-                x = tf.layers.dense(x, units=4 * 4 * 512, kernel_initializer = init_kernel)
+                # x = tf.layers.dense(x, units=4 * 4 * 512, kernel_initializer = init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnorm_1')
+                x = nn._linear_fc(x, 4 * 4 * 512, 'bg_h0_lin')
                 x = nn.batch_norm_contrib(x, name='batchnorm_1', train = is_training)
                 x = tf.nn.relu(x)
 
             x = tf.reshape(x, [-1, 4, 4, 512])
 
             with tf.variable_scope('deconv_1'):
-                x = tf.layers.conv2d_transpose(x, 256, [5, 5], strides=[2, 2], padding='SAME',
-                                               kernel_initializer=init_kernel)
+                # x = tf.layers.conv2d_transpose(x, 256, [5, 5], strides=[2, 2], padding='SAME',
+                #                                kernel_initializer=init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnorm_2')
+                x = nn._deconv2d(x, 256, k_w=5, k_h=5, d_w=2, d_h=2, name='bg_dconv0')  # [8, 8]
                 x = nn.batch_norm_contrib(x, name='batchnorm_2', train = is_training)
                 x = tf.nn.relu(x)
 
             with tf.variable_scope('deconv_2'):
-                x = tf.layers.conv2d_transpose(x, 128, [5, 5], strides=[2, 2], padding='SAME',
-                                               kernel_initializer=init_kernel)
+                # x = tf.layers.conv2d_transpose(x, 128, [5, 5], strides=[2, 2], padding='SAME',
+                #                                kernel_initializer=init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnormn_3')
+                x = nn._deconv2d(x, 128, k_w=5, k_h=5, d_w=2, d_h=2, name='bg_dconv1')
                 x = nn.batch_norm_contrib(x, name='batchnorm_2', train = is_training)
                 x = tf.nn.relu(x)
 
@@ -92,24 +95,27 @@ class GAN_manifold_reg():
             counter = {}
             x = z_seed
             with tf.variable_scope('dense_1'):
-                x = tf.layers.dense(x, units=4 * 4 * 512, kernel_initializer = init_kernel)
+                # x = tf.layers.dense(x, units=4 * 4 * 512, kernel_initializer = init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnorm_1')
+                x = nn._linear_fc(x, 4 * 4 * 512, 'bg_h0_lin')
                 x = nn.batch_norm_contrib(x, name='batchnorm_1', train = is_training)
                 x = tf.nn.relu(x)
 
             x = tf.reshape(x, [-1, 4, 4, 512])
 
             with tf.variable_scope('deconv_1'):
-                x = tf.layers.conv2d_transpose(x, 256, [5, 5], strides=[2, 2], padding='SAME',
-                                               kernel_initializer=init_kernel)
+                # x = tf.layers.conv2d_transpose(x, 256, [5, 5], strides=[2, 2], padding='SAME',
+                #                                kernel_initializer=init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnorm_2')
+                x = nn._deconv2d(x, 256, k_w=5, k_h=5, d_w=2, d_h=2, name='bg_dconv0')  # [8, 8]
                 x = nn.batch_norm_contrib(x, name='batchnorm_2', train = is_training)
                 x = tf.nn.relu(x)
 
             with tf.variable_scope('deconv_2'):
-                x = tf.layers.conv2d_transpose(x, 128, [5, 5], strides=[2, 2], padding='SAME',
-                                               kernel_initializer=init_kernel)
+                # x = tf.layers.conv2d_transpose(x, 128, [5, 5], strides=[2, 2], padding='SAME',
+                #                                kernel_initializer=init_kernel)
                 # x = tf.layers.batch_normalization(x, training=is_training, name='batchnormn_3')
+                x = nn._deconv2d(x, 128, k_w=5, k_h=5, d_w=2, d_h=2, name='bg_dconv1')
                 x = nn.batch_norm_contrib(x, name='batchnorm_2', train = is_training)
                 x = tf.nn.relu(x)
 

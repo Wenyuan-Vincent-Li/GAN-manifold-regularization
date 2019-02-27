@@ -12,9 +12,9 @@ import sys
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 64, "batch size [50]")
+flags.DEFINE_integer("batch_size", 100, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn_2000_self_samples_bn1', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_2000_self_samples_unl', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
 flags.DEFINE_integer('labeled', 200, 'labeled data per class')
@@ -170,7 +170,7 @@ def main(_):
         dvars = [var for var in tvars if 'classifier' in var.name]
         gvars = [var for var in tvars if 'bad_generator' in var.name]
 
-        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        # update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         # update_ops_gen = [x for x in update_ops if ('bad_generator' in x.name)]
 
 
@@ -228,11 +228,13 @@ def main(_):
     inc_global_epoch = tf.assign(global_epoch, global_epoch+1)
 
     # op initializer for session manager
-    init_gen = [var.initializer for var in gvars][:-3]
-    print(init_gen)
+    # init_gen = [var.initializer for var in gvars][:-3]
+    # print(init_gen)
 
-    with tf.control_dependencies(init_gen):
-        op = tf.global_variables_initializer()
+    # with tf.control_dependencies(init_gen):
+    #     op = tf.global_variables_initializer()
+    op = tf.global_variables_initializer()
+
     init_feed_dict = {inp: trainx_unl[:FLAGS.batch_size], unl: trainx_unl[:FLAGS.batch_size],
                                   is_training_pl: True, kl_weight: 0}
 
@@ -275,6 +277,7 @@ def main(_):
             trainy = np.concatenate(trainy, axis=0)
             trainx_unl = trainx_unl[rng.permutation(trainx_unl.shape[0])]  # shuffling unl dataset
             trainx_unl2 = trainx_unl2[rng.permutation(trainx_unl2.shape[0])]
+            # trainx_unl2 = trainx_unl
 
             # training
             for t in range(nr_batches_train):
@@ -296,9 +299,14 @@ def main(_):
                     writer.add_summary(sm, train_batch)
 
                 # train generator
-                _, lg, sm = sess.run([train_gen_op, loss_gen, sum_op_gen], feed_dict={unl: trainx_unl2[ran_from:ran_to],
+                # _, lg, sm = sess.run([train_gen_op, loss_gen, sum_op_gen], feed_dict={unl: trainx_unl2[ran_from:ran_to],
+                #                                                                       is_training_pl: True,
+                #                                                                       lr_pl: lr, kl_weight: klw}) # why not feed inp and why unl2?
+
+                _, lg, sm = sess.run([train_gen_op, loss_gen, sum_op_gen], feed_dict={unl: trainx_unl[ran_from:ran_to],
                                                                                       is_training_pl: True,
                                                                                       lr_pl: lr, kl_weight: klw}) # why not feed inp and why unl2?
+
                 train_loss_gen += lg
                 if (train_batch % FLAGS.step_print) == 0:
                     writer.add_summary(sm, train_batch)
@@ -349,16 +357,16 @@ def main(_):
                    test_acc, test_acc_ma))
             samples_o = sess.run(samples)
             save_images(samples_o[:64], image_manifold_size(64), \
-                        os.path.join("samples_bn1", 'train_{:02d}.png'.format(epoch )))
+                        os.path.join("samples_unl", 'train_{:02d}.png'.format(epoch )))
 
             sess.run(inc_global_epoch)
 
             # save snap shot of model
-            if ((epoch % FLAGS.freq_save == 0) & (epoch!=0) ) | (epoch == FLAGS.epoch-1):
-                string = 'model-' + str(epoch)
-                save_path = os.path.join(FLAGS.logdir, string)
-                sv.saver.save(sess, save_path)
-                print("Model saved in file: %s" % (save_path))
+            # if ((epoch % FLAGS.freq_save == 0) & (epoch!=0) ) | (epoch == FLAGS.epoch-1):
+            #     string = 'model-' + str(epoch)
+            #     save_path = os.path.join(FLAGS.logdir, string)
+            #     sv.saver.save(sess, save_path)
+            #     print("Model saved in file: %s" % (save_path))
 
 
 if __name__ == '__main__':
