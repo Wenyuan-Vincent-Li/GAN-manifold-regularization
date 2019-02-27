@@ -3,20 +3,21 @@ import time
 
 import numpy as np
 import tensorflow as tf
+from utils import *
 
-from svhn_gan import discriminator, generator
+from svhn_gan_self import GAN_manifold_reg as Model
 from data import svhn_data
 import sys
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 50, "batch size [50]")
+flags.DEFINE_integer("batch_size", 64, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn_2000', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_2000_self_samples_bn1', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
-flags.DEFINE_integer('labeled', 50, 'labeled data per class')
+flags.DEFINE_integer('labeled', 200, 'labeled data per class')
 flags.DEFINE_float('learning_rate', 0.0003, 'learning_rate[0.003]')
 flags.DEFINE_float('unl_weight', 1.0, 'unlabeled weight [1.]')
 flags.DEFINE_float('lbl_weight', 1.0, 'unlabeled weight [1.]')
@@ -119,16 +120,22 @@ def main(_):
     perturb = tf.random_normal([FLAGS.batch_size, 100], mean=0, stddev=0.01)
     random_z_pert = random_z + FLAGS.scale * perturb / (
     tf.expand_dims(tf.norm(perturb, axis=1), axis=1) * tf.ones([1, 100]))
-    generator(random_z, is_training_pl, init=True)  # init of weightnorm weights cf Salimans et al.
-    gen_inp = generator(random_z, is_training_pl, init=False, reuse=True)
-    gen_inp_pert = generator(random_z_pert, is_training_pl, init=False, reuse=True)
+    # generator(random_z, is_training_pl, init=True)  # init of weightnorm weights cf Salimans et al.
+    # gen_inp = generator(random_z, is_training_pl, init=False, reuse=True)
+    # gen_inp_pert = generator(random_z_pert, is_training_pl, init=False, reuse=True)
+    #
+    # discriminator(unl, is_training_pl, init=True)
+    # logits_lab, _ = discriminator(inp, is_training_pl, init=False,
+    #                               reuse=True)  # init of weightnorm weights cf Salimans et al.
+    # logits_gen, layer_fake = discriminator(gen_inp, is_training_pl, init=False, reuse=True)
+    # logits_unl, layer_real = discriminator(unl, is_training_pl, init=False, reuse=True)
+    # logits_gen_perturb, layer_fake_perturb = discriminator(gen_inp_pert, is_training_pl, init=False, reuse=True)
+    model = Model()
+    G, C = model.forward_pass(random_z, random_z_pert, inp, unl, is_training_pl)
+    gen_inp, gen_inp_pert = G
+    logits_lab, logits_unl, logits_gen, logits_gen_perturb, _, layer_real, layer_fake, layer_fake_perturb = C
 
-    discriminator(unl, is_training_pl, init=True)
-    logits_lab, _ = discriminator(inp, is_training_pl, init=False,
-                                  reuse=True)  # init of weightnorm weights cf Salimans et al.
-    logits_gen, layer_fake = discriminator(gen_inp, is_training_pl, init=False, reuse=True)
-    logits_unl, layer_real = discriminator(unl, is_training_pl, init=False, reuse=True)
-    logits_gen_perturb, layer_fake_perturb = discriminator(gen_inp_pert, is_training_pl, init=False, reuse=True)
+    samples = model.bad_sampler(random_z)
 
     with tf.name_scope('loss_functions'):
         l_unl = tf.reduce_logsumexp(logits_unl, axis=1)
@@ -160,19 +167,19 @@ def main(_):
         # control op dependencies for batch norm and trainable variables
         tvars = tf.trainable_variables()
 
-        dvars = [var for var in tvars if 'discriminator_model' in var.name]
-        gvars = [var for var in tvars if 'generator_model' in var.name]
+        dvars = [var for var in tvars if 'classifier' in var.name]
+        gvars = [var for var in tvars if 'bad_generator' in var.name]
 
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-        update_ops_gen = [x for x in update_ops if ('generator_model' in x.name)]
-        # update_ops_dis = [x for x in update_ops if ('discriminator_model' in x.name)]
+        # update_ops_gen = [x for x in update_ops if ('bad_generator' in x.name)]
 
 
         optimizer_dis = tf.train.AdamOptimizer(learning_rate=lr_pl, beta1=0.5, name='dis_optimizer')
         optimizer_gen = tf.train.AdamOptimizer(learning_rate=lr_pl, beta1=0.5, name='gen_optimizer')
 
-        with tf.control_dependencies(update_ops_gen):
-            train_gen_op = optimizer_gen.minimize(loss_gen, var_list=gvars)
+        # with tf.control_dependencies(update_ops_gen):
+        #     train_gen_op = optimizer_gen.minimize(loss_gen, var_list=gvars)
+        train_gen_op = optimizer_gen.minimize(loss_gen, var_list=gvars)
 
         dis_op = optimizer_dis.minimize(loss_dis, var_list=dvars)
 
@@ -182,7 +189,7 @@ def main(_):
         with tf.control_dependencies([dis_op]):
             train_dis_op = tf.group(maintain_averages_op)
 
-        logits_ema, _ = discriminator(inp, is_training_pl, getter=get_getter(ema), reuse=True)
+        logits_ema, _ = model.classifier(inp, is_training_pl, getter=get_getter(ema), reuse=True)
         correct_pred_ema = tf.equal(tf.cast(tf.argmax(logits_ema, 1), tf.int32), tf.cast(lbl, tf.int32))
         accuracy_ema = tf.reduce_mean(tf.cast(correct_pred_ema, tf.float32))
 
@@ -222,9 +229,7 @@ def main(_):
 
     # op initializer for session manager
     init_gen = [var.initializer for var in gvars][:-3]
-
     print(init_gen)
-    exit()
 
     with tf.control_dependencies(init_gen):
         op = tf.global_variables_initializer()
@@ -342,6 +347,9 @@ def main(_):
                 "| train acc = %.4f| test acc = %.4f | test acc ema = %0.4f"
                 % (epoch, time.time() - begin, klw, lr, train_loss_gen, train_loss_lab, train_loss_unl, train_acc,
                    test_acc, test_acc_ma))
+            samples_o = sess.run(samples)
+            save_images(samples_o[:64], image_manifold_size(64), \
+                        os.path.join("samples_bn1", 'train_{:02d}.png'.format(epoch )))
 
             sess.run(inc_global_epoch)
 
@@ -355,5 +363,5 @@ def main(_):
 
 if __name__ == '__main__':
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     tf.app.run()

@@ -21,7 +21,7 @@ def gaussian_noise_layer(input_layer, std):
 
 
 def discriminator(inp, is_training, init=False, reuse=False, getter =None):
-    with tf.variable_scope('discriminator_model', reuse=reuse,custom_getter=getter):
+    with tf.variable_scope('discriminator_model', reuse=reuse, custom_getter=getter):
         counter = {}
         x = tf.reshape(inp, [-1, 32, 32, 3])
 

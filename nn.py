@@ -325,3 +325,14 @@ def down_right_shifted_deconv2d(x, num_filters, filter_size=[2,2], stride=[1,1],
     x = deconv2d(x, num_filters, filter_size=filter_size, pad='VALID', stride=stride, **kwargs)
     xs = int_shape(x)
     return x[:,:(xs[1]-filter_size[0]+1):,:(xs[2]-filter_size[1]+1),:]
+
+@add_arg_scope
+def batch_norm_contrib(x, name, train = False):
+    x = tf.contrib.layers.batch_norm(x,
+                                     decay = 0.9,
+                                     updates_collections=None,
+                                     epsilon = 1e-5,
+                                     scale=True,
+                                     is_training=train,
+                                     scope=name)
+    return x
