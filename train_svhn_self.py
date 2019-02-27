@@ -12,7 +12,7 @@ import sys
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 flags = tf.app.flags
-flags.DEFINE_integer("batch_size", 100, "batch size [50]")
+flags.DEFINE_integer("batch_size", 50, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
 flags.DEFINE_string('logdir', './log/svhn_2000_self_samples_unl', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
@@ -371,5 +371,5 @@ def main(_):
 
 if __name__ == '__main__':
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     tf.app.run()
