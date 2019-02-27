@@ -223,9 +223,6 @@ def main(_):
     # op initializer for session manager
     init_gen = [var.initializer for var in gvars][:-3]
 
-    print(init_gen)
-    exit()
-
     with tf.control_dependencies(init_gen):
         op = tf.global_variables_initializer()
     init_feed_dict = {inp: trainx_unl[:FLAGS.batch_size], unl: trainx_unl[:FLAGS.batch_size],
