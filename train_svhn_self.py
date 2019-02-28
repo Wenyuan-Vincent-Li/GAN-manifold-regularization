@@ -14,10 +14,10 @@ import sys
 flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 50, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn_2000_self_no_reg', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_500', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
-flags.DEFINE_integer('labeled', 200, 'labeled data per class')
+flags.DEFINE_integer('labeled', 50, 'labeled data per class')
 flags.DEFINE_float('learning_rate', 0.0003, 'learning_rate[0.003]')
 flags.DEFINE_float('unl_weight', 1.0, 'unlabeled weight [1.]')
 flags.DEFINE_float('lbl_weight', 1.0, 'unlabeled weight [1.]')
@@ -357,7 +357,7 @@ def main(_):
                    test_acc, test_acc_ma))
             samples_o = sess.run(samples)
             save_images(samples_o[:64], image_manifold_size(64), \
-                        os.path.join("samples_no_reg", 'train_{:02d}.png'.format(epoch )))
+                        os.path.join("samples_50", 'train_{:02d}.png'.format(epoch )))
 
             sess.run(inc_global_epoch)
 
@@ -371,5 +371,5 @@ def main(_):
 
 if __name__ == '__main__':
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     tf.app.run()
