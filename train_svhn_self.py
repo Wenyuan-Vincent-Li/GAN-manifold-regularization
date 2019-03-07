@@ -357,7 +357,7 @@ def main(_):
                    test_acc, test_acc_ma))
             samples_o = sess.run(samples)
             save_images(samples_o[:64], image_manifold_size(64), \
-                        os.path.join("samples_50", 'train_{:02d}.png'.format(epoch )))
+                        os.path.join("samples_1000_deep", 'train_{:02d}.png'.format(epoch )))
 
             sess.run(inc_global_epoch)
 
