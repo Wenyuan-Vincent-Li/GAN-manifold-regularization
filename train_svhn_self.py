@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from utils import *
 
-from svhn_gan_self import GAN_manifold_reg as Model
+from svhn_gan_self_deep import GAN_manifold_reg as Model
 from data import svhn_data
 import sys
 
@@ -14,10 +14,10 @@ import sys
 flags = tf.app.flags
 flags.DEFINE_integer("batch_size", 50, "batch size [50]")
 flags.DEFINE_string('data_dir', './data/svhn', 'data directory')
-flags.DEFINE_string('logdir', './log/svhn_500', 'log directory')
+flags.DEFINE_string('logdir', './log/svhn_1000_deep', 'log directory')
 flags.DEFINE_integer('seed', 324, 'seed ')
 flags.DEFINE_integer('seed_data', 631, 'seed data')
-flags.DEFINE_integer('labeled', 50, 'labeled data per class')
+flags.DEFINE_integer('labeled', 100, 'labeled data per class')
 flags.DEFINE_float('learning_rate', 0.0003, 'learning_rate[0.003]')
 flags.DEFINE_float('unl_weight', 1.0, 'unlabeled weight [1.]')
 flags.DEFINE_float('lbl_weight', 1.0, 'unlabeled weight [1.]')
@@ -27,7 +27,7 @@ flags.DEFINE_float('scale', 1e-5, 'scale perturbation')
 flags.DEFINE_float('nabla_w', 1e-3, 'weight regularization')
 flags.DEFINE_integer('decay_start', 300, 'start of learning rate decay')
 flags.DEFINE_integer('epoch', 400, 'labeled data per class')
-flags.DEFINE_boolean('nabla', False, 'enable manifold reg')
+flags.DEFINE_boolean('nabla', True, 'enable manifold reg')
 
 
 flags.DEFINE_integer('freq_print', 10000, 'frequency image print tensorboard [10000]')
@@ -362,11 +362,11 @@ def main(_):
             sess.run(inc_global_epoch)
 
             # save snap shot of model
-            # if ((epoch % FLAGS.freq_save == 0) & (epoch!=0) ) | (epoch == FLAGS.epoch-1):
-            #     string = 'model-' + str(epoch)
-            #     save_path = os.path.join(FLAGS.logdir, string)
-            #     sv.saver.save(sess, save_path)
-            #     print("Model saved in file: %s" % (save_path))
+            if ((epoch % FLAGS.freq_save == 0) & (epoch!=0) ) | (epoch == FLAGS.epoch-1):
+                string = 'model-' + str(epoch)
+                save_path = os.path.join(FLAGS.logdir, string)
+                sv.saver.save(sess, save_path)
+                print("Model saved in file: %s" % (save_path))
 
 
 if __name__ == '__main__':
