@@ -35,7 +35,7 @@ flags.DEFINE_integer('freq_test', 1, 'frequency test [500]')
 flags.DEFINE_integer('freq_save', 50, 'frequency saver epoch[50]')
 
 FLAGS = flags.FLAGS
-FLAGS._parse_flags()
+# FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.lower(), value))
