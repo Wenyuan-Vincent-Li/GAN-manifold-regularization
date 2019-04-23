@@ -61,6 +61,9 @@ def linear_decay(decay_start, decay_end, epoch):
 
 
 def main(_):
+    import os
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  # see issue #152
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2"
     if not os.path.exists(FLAGS.logdir):
         os.makedirs(FLAGS.logdir)
 
